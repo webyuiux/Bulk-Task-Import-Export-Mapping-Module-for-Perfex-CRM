@@ -1,56 +1,70 @@
-# Bulk Task Import for Perfex CRM
+# Premium Bulk Task Import & Export Mapping Module for Perfex CRM
 
-Install this folder as `modules/bulk_task_import` in a Perfex CRM installation using the documented module APIs. The module avoids a restrictive `Requires at least` header so Perfex can activate it across supported releases.
-
-The module follows Perfex's module basics:
-
-- `bulk_task_import.php` is the matching module init file.
-- Activation creates only importer-management tables using `db_prefix()`.
-- The admin menu and settings use Perfex hooks and helpers.
-- The translation file is registered with Perfex's `register_language_files()` helper.
-- Permission checks use Perfex staff capabilities.
-- Task creation delegates to Perfex's existing `tasks_model`.
-- Imported descriptions are passed as the normal `description` task field.
-- Rollback only targets task IDs recorded for the selected import batch.
+A highly polished, premium multi-step importer and exporter module for Perfex CRM. It allows bulk task importing from CSV and Excel spreadsheets directly inside the native **Tasks** and **Project View** modules with intelligent mapping, real-time validation, and a rollback feature.
 
 ---
 
 ## 📸 Screenshots & Workflow Steps
 
-Here is the step-by-step workflow of the importer:
-
-### 1. Upload Spreadsheet
-Upload your CSV or Excel (`.xlsx`) files. You can download the blank template directly from this screen. Additionally, you can associate all tasks with a specific project using the dropdown list.
+### 1. File Upload & Project Association
+Upload your CSV or Excel (`.xlsx`) files. You can associate all imported tasks with a selected project using the live-search picker (automatically pre-selected when launching the importer from inside a project details view).
 ![Upload Screen](screenshots/bulk_task_import_upload.png)
 
-### 2. Column Mapping
-Map the headers from your uploaded file to the corresponding task fields in Perfex CRM (e.g., Subject, Description, Priority, Status, Assignees, Checklist Items). Click **Auto Map Columns** for fast mapping.
+### 2. Intelligent Column Mapping
+Match headers from your spreadsheet to Perfex CRM task fields (Subject, Description, Priority, Status, Billable, Hourly Rate, Estimated Hours, Tags, Assignees, Checklist Items). Click **Auto Map Columns** to automatically align standard headers.
 ![Column Mapping](screenshots/bulk_task_import_mapping.png)
 
-### 3. Validation Results
-Review rows before importing. Succeeded tasks will be marked as **Valid**. Rows with missing required fields or incorrect data types will show warning/error alerts, and blocking errors will be skipped during insertion.
+### 3. Real-Time Validation Results
+Review data validation reports before importing. Succeeded tasks are marked as **Valid**, while errors/missing required fields are flagged with details. You can filter the table dynamically or download a CSV error log.
 ![Validation results](screenshots/bulk_task_import_validation.png)
 
-### 4. Completion & Summary
-Once validation is confirmed, tasks are created along with their tags, assignees, and checklist subtasks (complete with individual subtask assignees). A final summary is shown with options to view the tasks or download report details.
+### 4. Import Summary & Rollback
+After importing, view a complete count of imported tasks. Administrators can review the **Import History** log and perform a **Rollback** to delete all tasks created by a specific batch in case of upload errors.
 ![Import Complete](screenshots/bulk_task_import_complete.png)
 
 ---
 
-## ⚙️ Configuration & XLSX Dependency
+## 🌟 Key Features
 
-* **CSV Import**: Works out of the box without any external dependencies.
-* **XLSX Support**: For Excel `.xlsx` files, ensure PhpSpreadsheet is installed and autoloaded. The reader handles missing libraries gracefully with clear warning notices.
-* **Settings**: Configure maximum file size, duplicate detection, and batch size rules under **Setup > Settings > Bulk Task Import**.
+* **Inline Action Buttons**: Injects the **Bulk Import** and **Export Tasks** buttons inline next to the native *New Task* CTA on Tasks and Projects View pages.
+* **Full-Page Wizard Stepper**: Overhauled from a simple popup overlay to a premium full-page card layout with wizard stepper navigation.
+* **Subtasks & Checklist Assignees**: Import subtask checklists and assign them to specific staff members using the syntax: `Subtask Description (email@domain.com)` separated by a pipe `|` (e.g. `Design Layout (designer@test.com) | Write Code (coder@test.com)`).
+* **Database Column Safeguards**: Dynamically inspects database columns before saving. If columns like `estimated_hours` do not exist in the active Perfex CRM version, they are automatically stripped to prevent database insertion crashes.
+* **MIME-Type Cache Buster**: Downloads the CSV import template through a dedicated controller route, guaranteeing it saves as a `.csv` file regardless of server mime-type configuration.
+* **Clear History Utility**: Admins can wipe all log history records with a single click via the **Clear Import History** button on the audit trail page.
 
 ---
 
-## 🚀 Safe Rollout
+## 📋 CSV Import Template Columns
 
-1. Enable development mode on a staging Perfex installation.
-2. Install and activate the module from **Setup > Modules**.
-3. Assign View and Import permissions to a test staff role.
-4. Import the template and confirm formatting.
-5. Go to **Tasks > Bulk Import** to start importing your data!
+The template CSV includes the following headers:
+1. `Subject` (Required) — The title of the task.
+2. `Description` — The detailed text description (supports newlines).
+3. `Start Date` — Formatted as `YYYY-MM-DD`.
+4. `Due Date` — Formatted as `YYYY-MM-DD`.
+5. `Priority` — `Low`, `Medium`, `High`, or `Urgent`.
+6. `Status` — `Not Started`, `In Progress`, `Testing`, `Awaiting Feedback`, or `Complete`.
+7. `Billable` — `Yes` or `No`.
+8. `Hourly Rate` — The billing rate value.
+9. `Estimated Hours` — Task estimation value (automatically ignored if database table does not support it).
+10. `Tags` — Comma-separated list of tags (e.g. `UI, Design, Frontend`).
+11. `Assigned To` — Comma-separated list of assignee emails.
+12. `Checklist Items` — Pipe-separated list of checklist items with optional assignees (e.g. `Item 1 (staff@mail.com) | Item 2`).
 
-*The module does not modify any Perfex core files.*
+---
+
+## ⚙️ Settings & Configuration
+
+Configure the maximum file upload size, duplicate check rules, and batch configuration from **Setup > Settings > Bulk Task Import**. 
+
+* **CSV Import**: Works out of the box with zero dependencies.
+* **Excel XLSX Support**: For Excel `.xlsx` spreadsheets, ensure `PhpSpreadsheet` is installed and autoloaded on the server.
+
+---
+
+## 🚀 Safe Installation
+
+1. Copy the folder to `modules/bulk_task_import`.
+2. Go to **Setup > Modules** in Perfex CRM and click **Activate**.
+3. Go to **Setup > Staff** to assign bulk import permissions to your staff roles.
+4. You're ready to import! Use the **Bulk Import** button beside the *New Task* CTA on Tasks or Projects.
